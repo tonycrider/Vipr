@@ -296,7 +296,7 @@ namespace ODataReader.v3
                         WriteProperty(odcmClass, property);
                     }
 
-                    foreach (IEdmStructuralProperty keyProperty in entityType.Key())
+                    foreach (IEdmStructuralProperty keyProperty in AllKeys(entityType))
                     {
                         OdcmProperty property;
                         if (!TryFindProperty(odcmClass, keyProperty, out property))
@@ -345,6 +345,26 @@ namespace ODataReader.v3
                     foreach (var functionImport in functionImports)
                     {
                         WriteMethod(odcmClass, functionImport);
+                    }
+                }
+            }
+
+            private IEnumerable<IEdmStructuralProperty> AllKeys(IEdmEntityType entityType)
+            {
+                var baseEntityType = entityType.BaseEntityType();
+                if (baseEntityType != null)
+                {
+                    foreach (var property in AllKeys(baseEntityType))
+                    {
+                        yield return property;
+                    }
+                }
+
+                if (entityType.DeclaredKey != null)
+                {
+                    foreach (var property in entityType.DeclaredKey)
+                    {
+                        yield return property;
                     }
                 }
             }
